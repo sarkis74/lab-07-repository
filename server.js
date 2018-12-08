@@ -3,7 +3,7 @@
 //Application Dependencies
 const express = require('express');
 const cors = require('cors');
-
+const superagent = require('superagent');
 //Load env vars
 require('dotenv').config();
 
@@ -60,8 +60,9 @@ function searchToLatLong(query){
 function searchForWeather(query){
   const weatherData = require('./data/darksky.json');
   let dailyForecast = [];
-  weatherData.daily.data.forEach(weather => dailyForecast.push(new Weather(weather)));
+  weatherData.daily.data.map(weather => dailyForecast.push(new Weather(weather)));
   return dailyForecast;
+  
 }
 
 //Give error message if incorrect
