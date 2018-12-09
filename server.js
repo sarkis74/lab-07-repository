@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const superagent = require('superagent');
 
+
 //Load env vars
 require('dotenv').config();
 
@@ -20,7 +21,7 @@ app.use(cors());
 
 app.get('/location', getLocation)
 
-// app.get('/weather', getWeather)
+app.get('/weather', getWeather)
 
 
 //Handlers
@@ -29,23 +30,10 @@ function getLocation(request, response){
     response.send(locationData); //Promise: when superagent makes a promise to the frontend
   })
   .catch(err => err);
- 
 }
-
-// function getWeather(req, res){
-//   const weatherData = searchForWeather(req.query.data);
-//   res.send(weatherData);
-// }
-
-// //Constructor
-// function Weather(weather) {
-//   this.forecast = weather.summary;
-//   this.time = new Date(weather.time * 1000).toDateString();
-// }
-
-function Location(location, response){
+ 
+function Location(location){
   this.formatted_query = location.formatted_address;
-  console.log(this.formatted_query)
   this.latitude = location.geometry.location.lat;
   this.longitude = location.geometry.location.lng;
 }
@@ -56,26 +44,42 @@ function searchToLatLong(query){
  
   return superagent.get(url)
   .then(geoData => {
-   
-    console.log(geoData.body.results[0], 'GEODATA RESULTS')
-  const location = new Location(geoData.body.results);
-  console.log(location)
+  const location = new Location(geoData.body.results[0]);
   return location;
   }) 
   .catch(err => err);
 }
 
-// function searchForWeather(query){
-//   const weatherData = require('./data/darksky.json');
-//   let dailyForecast = [];
-//   weatherData.daily.data.map(weather => dailyForecast.push(new Weather(weather)));
-//   return dailyForecast;
+function getWeather(request, response){
+  return searchForWeather(request.query.data).then(weatherData => {
+    response.send(weatherData); //Promise: when superagent makes a promise to the frontend
+  })
+  .catch(err => err);
+}
+
+//Constructor
+function Weather(weather) {
+  this.forecast = weather.summary;
+  this.time = weather.time;
   
-// }
+}
+
+function searchForWeather(query){
+  const url = `https://api.darksky.net/forecast/${process.env.WEATHERCODE_API}/${query.latitude},${query.longitude}`;
+  console.log(url)
+  return superagent.get(url)
+  .then(weatherData => {
+  let weatherArr = weatherData.body.daily.data.map(weather => new Weather(weather));
+  console.log(weatherArr)
+  return weatherArr;
+  }) 
+  .catch(err => err);
+  
+}
 
 //Give error message if incorrect
 app.get('/*', function(req, res){
-  // res.status(404).send('you are in the wrong place');
+  res.status(404).send('you are in the wrong place');
 })
 
 //THIS must be at bottom of code!!!
