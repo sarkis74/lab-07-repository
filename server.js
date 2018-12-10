@@ -3,6 +3,7 @@
 //Application Dependencies
 const express = require('express');
 const cors = require('cors');
+const superagent = require('superagent');
 
 //Load env vars
 require('dotenv').config();
@@ -16,23 +17,25 @@ app.use(cors());
 
 //Routes;
 
-app.get('/location', getLocation)
+app.get('/location', getLocation);
 
-app.get('/weather', getWeather)
+app.get('/weather', getWeather);
 
 
 //Handlers
 function getLocation(request, response){
-  return searchToLatLong(request.query.data) //Lynnwood,WA
-  .then(locationData => {
-    response.send(locationData); //Promise: when superagent makes a promise to the frontend
-  })
+  return searchToLatLong(request.query.data)
+    .then(locationData => {
+      response.send(locationData); //Promise: when superagent makes a promise to the frontend
+    });
  
 }
 
-function getWeather(req, res){
-  const weatherData = searchForWeather(req.query);
-  res.send(weatherData);
+function getWeather(request, response){
+  return searchForWeather(request.query)
+    .then(weatherData => {
+      response.send(weatherData);
+    });
 }
 
 //Constructor
@@ -49,27 +52,36 @@ function Location(location){
 
 //Search for Resources
 function searchToLatLong(query){
-  return superagent.get(`https://maps.googleapis.com/api/geocode/json?address=$key=${process.env.GEOCODE_API_KEY}`)
-  .then(geoData => {
-  const location = new Location(geoData.results[0]);
-  return location;
-  }) 
-  .catch(err => console.log(err));
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
+  return superagent.get(url)
+    .then(geoData => {
+      const location = new Location(geoData.body.results[0]);
+      return location;
+    })
+    .catch(err => console.log('superagent error%%%%%%%%%%%%', err));
 }
 
 function searchForWeather(query){
-  const weatherData = require('./data/darksky.json');
-  let dailyForecast = [];
-  weatherData.daily.data.forEach(weather => dailyForecast.push(new Weather(weather)));
-  return dailyForecast;
+  const url = `https://api.darksky.net/forecast/${query}&key=${process.env.WEATHER_API_KEY}/${query.latitude},${query.longitude}`;
+  
+  return superagent.get(url)
+    .then(weatherData => {
+      const weather = new Weather(weatherData.body);
+      console.log(weatherData.body);
+      return weather;
+    })
+    .catch(err => console.log('weather errrrrrrrorrrrrrrrrr', err));
+  // let dailyForecast = [];
+  // weatherData.daily.data.forEach(weather => dailyForecast.push(new Weather(weather)));
+  // return dailyForecast;
 }
 
 //Give error message if incorrect
-app.get('/*', function(req, res){
-  res.status(404).send('you are in the wrong place');
-})
+app.get('/*', function(request, response){
+  response.status(404).send('you are in the wrong place');
+});
 
 //THIS must be at bottom of code!!!
 app.listen(PORT, () => {
-  console.log(`app is up at port: ${PORT}.`)
-})
+  console.log(`${PORT}`);
+});

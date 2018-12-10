@@ -3,7 +3,7 @@
     {
       "address_components" : [
         {
-          "long_name" : "Lynnwood",
+         "long_name" : "Lynnwood",
           "short_name" : "Lynnwood",
           "types" : [ "locality", "political" ]
         },
