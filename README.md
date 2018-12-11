@@ -28,13 +28,13 @@ Lab 7 Collaborators: Jeff Mullen and Sarkis Aghazarian
 
 Number and name of feature: #1 Consistently format data
 
-Estimate of time needed to complete: 25 min
+Estimate of time needed to complete: 3 hours
 
 Start time: 1:00 pm
 
-Finish time: 1:20 pm
+Finish time: 6:20 pm
 
-Actual time needed to complete: 20 mins
+Actual time needed to complete: 3hours 20 mins
 
 Number and name of feature: #2 Retrieve restaurant information
 
@@ -44,7 +44,7 @@ Start time:
 
 Finish time: 
 
-Actual time needed to complete: 
+Actual time needed to complete: Still working on feature
 
 Number and name of feature: #3 Retrieve movie information
 
@@ -54,4 +54,4 @@ Start time:
 
 Finish time: 
 
-Actual time needed to complete: 
+Actual time needed to complete: Still working on feature
