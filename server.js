@@ -10,7 +10,7 @@ const superagent = require('superagent');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 3000;
-console.log(PORT)
+console.log(PORT);
 
 //app
 const app = express();
@@ -19,9 +19,9 @@ app.use(cors());
 
 //Routes;
 
-app.get('/location', getLocation)
+app.get('/location', getLocation);
 
-app.get('/weather', getWeather)
+app.get('/weather', getWeather);
 
 
 //Handlers
@@ -29,7 +29,7 @@ function getLocation(request, response){
   return searchToLatLong(request.query.data).then(locationData => {
     response.send(locationData); //Promise: when superagent makes a promise to the frontend
   })
-  .catch(err => err);
+    .catch(err => err);
 }
  
 function Location(location){
@@ -43,46 +43,46 @@ function searchToLatLong(query){
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
  
   return superagent.get(url)
-  .then(geoData => {
-  const location = new Location(geoData.body.results[0]);
-  return location;
-  }) 
-  .catch(err => err);
+    .then(geoData => {
+      const location = new Location(geoData.body.results[0]);
+      return location;
+    }) 
+    .catch(err => err);
 }
 
 function getWeather(request, response){
   return searchForWeather(request.query.data).then(weatherData => {
     response.send(weatherData); //Promise: when superagent makes a promise to the frontend
   })
-  .catch(err => err);
+    .catch(err => err);
 }
 
 //Constructor
 function Weather(weather) {
   this.forecast = weather.summary;
-  this.time = weather.time;
+  this.time = new Date(weather.time * 1000).toDateString();
   
 }
 
 function searchForWeather(query){
-  const url = `https://api.darksky.net/forecast/${process.env.WEATHERCODE_API}/${query.latitude},${query.longitude}`;
-  console.log(url)
+  const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${query.latitude},${query.longitude}`;
+  console.log(url);
   return superagent.get(url)
-  .then(weatherData => {
-  let weatherArr = weatherData.body.daily.data.map(weather => new Weather(weather));
-  console.log(weatherArr)
-  return weatherArr;
-  }) 
-  .catch(err => err);
+    .then(weatherData => {
+      let weatherArr = weatherData.body.daily.data.map(weather => new Weather(weather));
+      console.log(weatherArr);
+      return weatherArr;
+    }) 
+    .catch(err => err);
   
 }
 
 //Give error message if incorrect
 app.get('/*', function(req, res){
   res.status(404).send('you are in the wrong place');
-})
+});
 
 //THIS must be at bottom of code!!!
 app.listen(PORT, () => {
-  console.log(`app is up at port: ${PORT}.`)
-})
+  console.log(`app is up at port: ${PORT}.`);
+});
