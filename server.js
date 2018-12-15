@@ -82,7 +82,7 @@ function searchForWeather(query){
   
 }
 
-////////////////////////////////////////////Restaurant//////////////////////////////////////////////
+////////////////////////////////////////////Restaurants//////////////////////////////////////////////
 //Handler
 function getRestaurant(request, response){
   return searchForRestaurant(request.query.data).then(restaurantData => {
@@ -120,6 +120,7 @@ function searchForRestaurant(query){
 ////////////////////////////////////////////Movies//////////////////////////////////////////////
 //Handler
 function getMovies(request, response){
+
   return searchForMovies(request.query.data).then(moviesData => {
     response.send(moviesData); //Promise: when superagent makes a promise to the frontend
   })
@@ -138,19 +139,48 @@ function Movies(movies) {
   
 }
 
-searchForMovies()
-//Search for Resources
-function searchForMovies(query){
-  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIESCODE_API}&query=${query.short_name}`;
-  return superagent.get(url)
-  .then(moviesData => {
-   let moviesArr = moviesData.body.businesses.map(movies => new Movies(movies));
-   return moviesArr;
- 
-  }) 
-  .catch(err => err);
+
+function searchForMovies (query) {
+  let citySplice = query.formatted_query.split(',');
+  let URL = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIESCODE_API}&query=${citySplice[0]}, ${citySplice[1]}`;
   
-}
+  return superagent.get(URL)
+    .then( moviesData => {
+      let movies = moviesData.body.results;//array of results
+      // Sort movies by Popularity
+      movies.sort( function (a,b) {
+        if( a.popularity > b.popularity) return -1;
+        if( b.popularity > a.popularity) return 1;
+        return 0;
+      });
+      //If # of movies less than 20
+      let numMovies = 20;
+      if(movies.length < 20) numMovies = movies.length;
+      //For Loop over first 20 movies
+      moviesArray = [];
+      for(let i = 0 ; i < nummovies ; i++) {
+        //create movies objects and push into array.
+        moviesArray.push(new Movies (movies[i]));
+      }
+      return moviesArray;
+    });
+  }
+
+// searchForMovies()
+// //Search for Resources
+// function searchForMovies(query){
+//   let citySplice = query.formatted_query.split(',');
+//   console.log(citySplice)
+//   const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIESCODE_API}&query=${query}`;
+//   return superagent.get(url)
+//   .then(moviesData => {
+//    let moviesArr = moviesData.body.businesses.map(movies => new Movies(movies));
+//    return moviesArr;
+ 
+//   }) 
+//   .catch(err => err);
+  
+// }
 
 ////////////////////////////////////////////DefaultMessages//////////////////////////////////////////////
 //Give error message if incorrect
