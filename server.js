@@ -29,7 +29,7 @@ app.get('/movies', getMovies)
 let weatherArr = [];
 let restaurantArr = [];
 let moviesArray = [];
-const regex = /\w+\s\w+|\w{3,},/;
+const regex = /\w+,\w+|\w+\s\w+,[\s?\S]\w+/;
 
 ////////////////////////////////////////////Location//////////////////////////////////////////////
 //Handler
@@ -112,6 +112,7 @@ function Restaurant(restaurant) {
 searchForRestaurant()
 //Search for Resources
 function searchForRestaurant(query){
+  console.log(query)
   if(query !== undefined) //Makes sure the search is not empty so as to not break code
   query = JSON.stringify(query).match(regex);
   const url = `https://api.yelp.com/v3/businesses/search?term=restaurants&location=${query}`;
@@ -173,7 +174,7 @@ function searchForMovies (query) {
         moviesArray.push(new Movies (movies[i]));
        
       }
-   
+      console.log(moviesArray)
       return moviesArray;
     });
   }
