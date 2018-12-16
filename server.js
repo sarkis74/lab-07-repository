@@ -29,7 +29,7 @@ app.get('/movies', getMovies)
 let weatherArr = [];
 let restaurantArr = [];
 let moviesArray = [];
-const regex = /\w+,\w+|\w+\s\w+,[\s?\S]\w+/;
+const regex = /\w+,\w+|\w+\s\w+,[\s?\S]\w+|\b\d+\s\w+[\S?\s]\w+,[\S?\s]\w+,[\S?\s]\w+/;
 
 ////////////////////////////////////////////Location//////////////////////////////////////////////
 //Handler
@@ -148,7 +148,7 @@ function Movies(movies) {
   this.image_url = 'https://image.tmdb.org/t/p/w200_and_h300_bestv2/' + movies.poster_path;
   this.popularity = movies.popularity;
   this.released_on = movies.release_date;
-  
+
 }
 
 
@@ -174,7 +174,6 @@ function searchForMovies (query) {
         moviesArray.push(new Movies (movies[i]));
        
       }
-      console.log(moviesArray)
       return moviesArray;
     });
   }
