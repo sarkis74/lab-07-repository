@@ -25,6 +25,12 @@ app.get('/yelp', getRestaurant)
 
 app.get('/movies', getMovies)
 
+//Global Variables
+let weatherArr = [];
+let restaurantArr = [];
+let moviesArray = [];
+const regex = /\w+\s\w+|\w{3,},/;
+
 ////////////////////////////////////////////Location//////////////////////////////////////////////
 //Handler
 function getLocation(request, response){
@@ -75,16 +81,15 @@ function searchForWeather(query){
   const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${query.latitude},${query.longitude}`;
   console.log(url);
   return superagent.get(url)
-    .then(weatherData => {
-      let weatherArr = weatherData.body.daily.data.map(weather => new Weather(weather));
-      console.log(weatherArr);
-      return weatherArr;
-    }) 
-    .catch(err => err);
-  
+
+  .then(weatherData => {
+  weatherArr = weatherData.body.daily.data.map(weather => new Weather(weather));
+  return weatherArr;
+  }) 
+  .catch(err => err);  
 }
 
-////////////////////////////////////////////Restaurant//////////////////////////////////////////////
+////////////////////////////////////////////Restaurants//////////////////////////////////////////////
 //Handler
 function getRestaurant(request, response){
   return searchForRestaurant(request.query.data).then(restaurantData => {
@@ -101,27 +106,32 @@ function Restaurant(restaurant) {
   this.rating = restaurant.rating;
   this.url = restaurant.url;
   
+  restaurantArr.push(this);
 }
 
 searchForRestaurant()
 //Search for Resources
 function searchForRestaurant(query){
+  if(query !== undefined) //Makes sure the search is not empty so as to not break code
+  query = JSON.stringify(query).match(regex);
   const url = `https://api.yelp.com/v3/businesses/search?term=restaurants&location=${query}`;
   return superagent.get(url)
   .set('Authorization',
   `Bearer ${process.env.RESTAURANTCODE_API}`)
   .then(restaurantData => {
-   let restaurantArr = restaurantData.body.businesses.map(restaurant => new Restaurant(restaurant));
+   restaurantArr = restaurantData.body.businesses.map(restaurant => new Restaurant
+  (restaurant));
    return restaurantArr;
  
   }) 
   .catch(err => err);
-  
+
 }
 
 ////////////////////////////////////////////Movies//////////////////////////////////////////////
 //Handler
 function getMovies(request, response){
+
   return searchForMovies(request.query.data).then(moviesData => {
     response.send(moviesData); //Promise: when superagent makes a promise to the frontend
   })
@@ -140,19 +150,33 @@ function Movies(movies) {
   
 }
 
-searchForMovies()
-//Search for Resources
-function searchForMovies(query){
-  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIESCODE_API}&query=${query.short_name}`;
-  return superagent.get(url)
-  .then(moviesData => {
-   let moviesArr = moviesData.body.businesses.map(movies => new Movies(movies));
-   return moviesArr;
+
+function searchForMovies (query) {
+  let citySplice = query.formatted_query.split(',');
+  let URL = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIESCODE_API}&query=${citySplice[0]}, ${citySplice[1]}`;
  
-  }) 
-  .catch(err => err);
-  
-}
+  return superagent.get(URL)
+    .then( moviesData => {
+      let movies = moviesData.body.results;//array of results
+      // Sort movies by Popularity
+      movies.sort( function (a,b) {
+        if( a.popularity > b.popularity) return -1;
+        if( b.popularity > a.popularity) return 1;
+        return 0;
+      });
+      //If # of movies less than 20
+      let numMovies = 20;
+      if(movies.length < 20) numMovies = movies.length;
+      //For Loop over first 20 movies
+      for(let i = 0 ; i < numMovies ; i++) {
+        //create movies objects and push into array.
+        moviesArray.push(new Movies (movies[i]));
+       
+      }
+   
+      return moviesArray;
+    });
+  }
 
 ////////////////////////////////////////////DefaultMessages//////////////////////////////////////////////
 //Give error message if incorrect
