@@ -17,9 +17,9 @@ app.use(cors());
 
 //Routes;
 
-app.get('/location', getLocation)
+app.get('/location', getLocation);
 
-app.get('/weather', getWeather)
+app.get('/weather', getWeather);
 
 app.get('/yelp', getRestaurant)
 
@@ -37,7 +37,7 @@ function getLocation(request, response){
   return searchToLatLong(request.query.data).then(locationData => {
     response.send(locationData); //Promise: when superagent makes a promise to the frontend
   })
-  .catch(err => err);
+    .catch(err => err);
 }
 
 //Constructor 
@@ -53,11 +53,11 @@ function searchToLatLong(query){
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
  
   return superagent.get(url)
-  .then(geoData => {
-  const location = new Location(geoData.body.results[0]);
-  return location;
-  }) 
-  .catch(err => err);
+    .then(geoData => {
+      const location = new Location(geoData.body.results[0]);
+      return location;
+    }) 
+    .catch(err => err);
 }
 
 ////////////////////////////////////////////Weather//////////////////////////////////////////////
@@ -66,7 +66,7 @@ function getWeather(request, response){
   return searchForWeather(request.query.data).then(weatherData => {
     response.send(weatherData); //Promise: when superagent makes a promise to the frontend
   })
-  .catch(err => err);
+    .catch(err => err);
 }
 
 //Constructor
@@ -78,14 +78,15 @@ function Weather(weather) {
 
 //Search for Resources
 function searchForWeather(query){
-  const url = `https://api.darksky.net/forecast/${process.env.WEATHERCODE_API}/${query.latitude},${query.longitude}`;
+  const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${query.latitude},${query.longitude}`;
+  console.log(url);
   return superagent.get(url)
+
   .then(weatherData => {
   weatherArr = weatherData.body.daily.data.map(weather => new Weather(weather));
   return weatherArr;
   }) 
-  .catch(err => err);
-  
+  .catch(err => err);  
 }
 
 ////////////////////////////////////////////Restaurants//////////////////////////////////////////////
