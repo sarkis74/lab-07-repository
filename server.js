@@ -25,6 +25,12 @@ app.get('/yelp', getRestaurant)
 
 app.get('/movies', getMovies)
 
+//Global Variables
+let weatherArr = [];
+let restaurantArr = [];
+let moviesArray = [];
+const regex = /\w+\s\w+|\w{3,},/;
+
 ////////////////////////////////////////////Location//////////////////////////////////////////////
 //Handler
 function getLocation(request, response){
@@ -75,7 +81,7 @@ function searchForWeather(query){
   const url = `https://api.darksky.net/forecast/${process.env.WEATHERCODE_API}/${query.latitude},${query.longitude}`;
   return superagent.get(url)
   .then(weatherData => {
-  let weatherArr = weatherData.body.daily.data.map(weather => new Weather(weather));
+  weatherArr = weatherData.body.daily.data.map(weather => new Weather(weather));
   return weatherArr;
   }) 
   .catch(err => err);
@@ -99,22 +105,26 @@ function Restaurant(restaurant) {
   this.rating = restaurant.rating;
   this.url = restaurant.url;
   
+  restaurantArr.push(this);
 }
 
 searchForRestaurant()
 //Search for Resources
 function searchForRestaurant(query){
+  if(query !== undefined) //Makes sure the search is not empty so as to not break code
+  query = JSON.stringify(query).match(regex);
   const url = `https://api.yelp.com/v3/businesses/search?term=restaurants&location=${query}`;
   return superagent.get(url)
   .set('Authorization',
   `Bearer ${process.env.RESTAURANTCODE_API}`)
   .then(restaurantData => {
-   let restaurantArr = restaurantData.body.businesses.map(restaurant => new Restaurant(restaurant));
+   restaurantArr = restaurantData.body.businesses.map(restaurant => new Restaurant
+  (restaurant));
    return restaurantArr;
  
   }) 
   .catch(err => err);
-  
+
 }
 
 ////////////////////////////////////////////Movies//////////////////////////////////////////////
@@ -143,7 +153,7 @@ function Movies(movies) {
 function searchForMovies (query) {
   let citySplice = query.formatted_query.split(',');
   let URL = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIESCODE_API}&query=${citySplice[0]}, ${citySplice[1]}`;
-  
+ 
   return superagent.get(URL)
     .then( moviesData => {
       let movies = moviesData.body.results;//array of results
@@ -157,30 +167,15 @@ function searchForMovies (query) {
       let numMovies = 20;
       if(movies.length < 20) numMovies = movies.length;
       //For Loop over first 20 movies
-      moviesArray = [];
-      for(let i = 0 ; i < nummovies ; i++) {
+      for(let i = 0 ; i < numMovies ; i++) {
         //create movies objects and push into array.
         moviesArray.push(new Movies (movies[i]));
+       
       }
+   
       return moviesArray;
     });
   }
-
-// searchForMovies()
-// //Search for Resources
-// function searchForMovies(query){
-//   let citySplice = query.formatted_query.split(',');
-//   console.log(citySplice)
-//   const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIESCODE_API}&query=${query}`;
-//   return superagent.get(url)
-//   .then(moviesData => {
-//    let moviesArr = moviesData.body.businesses.map(movies => new Movies(movies));
-//    return moviesArr;
- 
-//   }) 
-//   .catch(err => err);
-  
-// }
 
 ////////////////////////////////////////////DefaultMessages//////////////////////////////////////////////
 //Give error message if incorrect
